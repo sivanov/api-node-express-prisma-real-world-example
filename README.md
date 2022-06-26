@@ -186,3 +186,18 @@ query get all articles not work, return 0 records and no http or code error
 ```bash
 npm run prisma:reset
 ```
+
+## API documentation
+links:
+* [endpoints](https://realworld-docs.netlify.app/docs/specs/backend-specs/endpoints/)
+* [JS*ON Objects returned by API](https://realworld-docs.netlify.app/docs/specs/backend-specs/api-response-format/)
+* [Templates fro pages](https://realworld-docs.netlify.app/docs/specs/frontend-specs/templates/)
+* [Old benchmarks](https://realworld-docs.netlify.app/docs/community/resources/)
+* [Postman collections](https://github.com/gothinkster/realworld/blob/main/api/Conduit.postman_collection.json)
+
+
+## Node_modules directory statistics
+
+```
+18 792 items, totalling 416,7 MB
+```
