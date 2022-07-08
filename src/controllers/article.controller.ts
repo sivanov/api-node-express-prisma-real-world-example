@@ -28,6 +28,7 @@ const router = Router();
  * @returns articles: list of articles
  */
 router.get('/articles', auth.optional, async (req: Request, res: Response, next: NextFunction) => {
+  console.log('controller > /articles', req.query);
   try {
     const result = await getArticles(req.query, req.user?.username);
     res.json(result);
@@ -52,6 +53,7 @@ router.get(
         Number(req.query.limit),
         req.user?.username as string,
       );
+      console.log('result: ', result);
       res.json(result);
     } catch (error) {
       next(error);

@@ -12,6 +12,8 @@ Some ot commands and API documentation was inocorect and I will try to improve i
 
 # Getting started
 
+This project is clone of www.medium.com
+
 ### Clone the repository
 
 run `git clone https://github.com/gothinkster/node-express-prisma-v1-official-app.git`
@@ -171,8 +173,101 @@ curl -X 'GET' \
   -H 'accept: application/json'
 ```
 
+```sh
+curl -X 'GET' 'http://localhost:3000/api/articles' -H 'accept: application/json'
+```
+
+
 ## Progress status
 query get all articles not work, return 0 records and no http or code error
+
+to debug Prisma you need to add this to .env file:
+```
+# enable all prisma debugging options
+export DEBUG="prisma*"
+```
+and  update row in file : /home/ivanov/s/git/sivanov/api-node-express-prisma-real-world-example/prisma/prisma-client.ts
+like this:
+```js
+
+const prisma = global.prisma || new PrismaClient({
+  log: [
+    {
+      emit: 'stdout',
+      level: 'query',
+    },
+    {
+      emit: 'stdout',
+      level: 'error',
+    },
+    {
+      emit: 'stdout',
+      level: 'info',
+    },
+    {
+      emit: 'stdout',
+      level: 'warn',
+    },
+  ],
+});
+```
+update rows in function getArticles:
+```js
+export const getArticles = async (query: any, username?: string) => {
+  // mandatory to be on the TOP
+  // source: https://www.prisma.io/docs/concepts/components/prisma-client/working-with-prismaclient/logging
+  prisma.$on('query', (e) => {
+    console.log('Query: ' + e.query)
+    console.log('Params: ' + e.params)
+    console.log('Duration: ' + e.duration + 'ms')
+  })
+```
+
+
+
+advanced query not work ok. replace limit $1 offset $2 like this: limit 0 offset 10 :
+```sql
+select
+	"public"."Article"."id",
+	"public"."Article"."slug",
+	"public"."Article"."title",
+	"public"."Article"."description",
+	"public"."Article"."body",
+	"public"."Article"."createdAt",
+	"public"."Article"."updatedAt",
+	"public"."Article"."authorId",
+	"aggr_selection_0_User"."_aggr_count_favoritedBy"
+from
+	"public"."Article"
+left join (
+	select
+		"public"."Article"."id",
+		COUNT(*) as "_aggr_count_favoritedBy"
+	from
+		"public"."_UserFavorites"
+	inner join "public"."Article" on
+		("public"."Article"."id" = ("public"."_UserFavorites"."A"))
+	inner join "public"."User" on
+		("public"."User"."id" = ("public"."_UserFavorites"."B"))
+	group by
+		"public"."Article"."id") as "aggr_selection_0_User" on
+	("public"."Article"."id" = "aggr_selection_0_User"."id")
+where
+	("public"."Article"."id") in (
+	select
+		"t0"."id"
+	from
+		"public"."Article" as "t0"
+	inner join "public"."User" as "j0" on
+		("j0"."id") = ("t0"."authorId")
+	where
+		(1 = 0
+			and 1 = 1
+			and "t0"."id" is not null))
+order by
+	"public"."Article"."createdAt" desc
+limit $1 offset $2
+```
 
 
 ### Reset the database

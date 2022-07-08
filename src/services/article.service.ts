@@ -60,12 +60,28 @@ const buildFindAllQuery = (query: any, username: string | undefined) => {
 };
 
 export const getArticles = async (query: any, username?: string) => {
+  // mandatory to be on the TOP
+  // source: https://www.prisma.io/docs/concepts/components/prisma-client/working-with-prismaclient/logging
+  prisma.$on('query', (e) => {
+    console.log('Query: ' + e.query)
+    console.log('Params: ' + e.params)
+    console.log('Duration: ' + e.duration + 'ms')
+  })
+
   const andQueries = buildFindAllQuery(query, username);
   const articlesCount = await prisma.article.count({
     where: {
       AND: andQueries,
     },
   });
+
+  const allArticles = await prisma.article.findMany({
+    orderBy: {
+      createdAt: 'desc',
+    },
+  });
+  console.log('allArticles', allArticles)
+
 
   const articles = await prisma.article.findMany({
     where: { AND: andQueries },
@@ -96,7 +112,8 @@ export const getArticles = async (query: any, username?: string) => {
       },
     },
   });
-
+  
+  console.log('services > articles: ', articles);
   return {
     articles: articles.map(({ authorId, id, _count, favoritedBy, ...article }) => ({
       ...article,
